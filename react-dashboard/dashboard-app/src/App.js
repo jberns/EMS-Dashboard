@@ -1,37 +1,67 @@
 import React from "react";
-import logo from "./logo.svg";
-import "./App.css";
-import { ApolloProvider } from "@apollo/react-hooks";
+import { withRouter } from "react-router";
 import { Layout } from "antd";
+import { InMemoryCache } from "apollo-cache-inmemory";
+import { ApolloProvider as ApolloHooksProvider } from "@apollo/react-hooks";
+import { ApolloProvider } from "react-apollo";
+import AWSAppSyncClient, { AUTH_TYPE } from "aws-appsync";
+import { Rehydrated } from "aws-appsync-react";
 import cubejs from "@cubejs-client/core";
 import { CubeProvider } from "@cubejs-client/react";
-import client from "./graphql/client";
-import Header from "./components/Header"; // change to your actual endpoint
+import { withAuthenticator } from "aws-amplify-react";
+import Amplify, { Auth, Hub } from 'aws-amplify';
+
+import Header from './components/Header';
+import aws_exports from './aws-exports';
 
 const API_URL = "http://localhost:4000";
-const CUBEJS_TOKEN =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1NzIyMTIwMjIsImV4cCI6MTU3MjI5ODQyMn0.ISMnrefmbwuMXkMdQD3AwAa8FJOj4BlRm2B2O-Y9bHs";
-const cubejsApi = cubejs(CUBEJS_TOKEN, {
-  apiUrl: `${API_URL}/cubejs-api/v1`
+const cubejsApi = cubejs(
+  async () => (await Auth.currentSession()).getIdToken().getJwtToken(),
+  { apiUrl: `${API_URL}/cubejs-api/v1` }
+);
+
+Amplify.configure(aws_exports);
+
+const client = new AWSAppSyncClient(
+  {
+    disableOffline: true,
+    url: aws_exports.aws_appsync_graphqlEndpoint,
+    region: aws_exports.aws_appsync_region,
+    auth: {
+      type: AUTH_TYPE.AMAZON_COGNITO_USER_POOLS,
+      jwtToken: async () => (await Auth.currentSession()).getIdToken().getJwtToken()
+    },
+  },
+  { cache: new InMemoryCache() }
+);
+
+Hub.listen('auth', (data) => {
+  if (data.payload.event === 'signOut') {
+    client.resetStore();
+  }
 });
 
-const AppLayout = ({ children }) => (
-  <Layout
-    style={{
-      height: "100%"
-    }}
-  >
-    <Header />
+const AppLayout = ({ location, children }) => (
+  <Layout style={{ height: "100%" }}>
+    <Header location={location} />
     <Layout.Content>{children}</Layout.Content>
   </Layout>
 );
 
-const App = ({ children }) => (
+const App = withRouter(({ location, children }) => (
   <CubeProvider cubejsApi={cubejsApi}>
     <ApolloProvider client={client}>
-      <AppLayout>{children}</AppLayout>
+      <ApolloHooksProvider client={client}>
+        <Rehydrated>
+          <AppLayout location={location}>{children}</AppLayout>
+        </Rehydrated>
+      </ApolloHooksProvider>
     </ApolloProvider>
   </CubeProvider>
-);
+));
 
-export default App;
+export default withAuthenticator(App, {
+  signUpConfig: {
+    hiddenDefaults: ["phone_number"]
+  }
+});

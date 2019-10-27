@@ -1,6 +1,7 @@
 import gql from "graphql-tag";
+
 export const CREATE_DASHBOARD_ITEM = gql`
-  mutation CreateDashboardItem($input: DashboardItemInput) {
+  mutation CreateDashboardItem($input: CreateDashboardItemInput!) {
     createDashboardItem(input: $input) {
       id
       layout
@@ -9,9 +10,10 @@ export const CREATE_DASHBOARD_ITEM = gql`
     }
   }
 `;
+
 export const UPDATE_DASHBOARD_ITEM = gql`
-  mutation UpdateDashboardItem($id: String!, $input: DashboardItemInput) {
-    updateDashboardItem(id: $id, input: $input) {
+  mutation UpdateDashboardItem($input: UpdateDashboardItemInput!) {
+    updateDashboardItem(input: $input) {
       id
       layout
       vizState
@@ -19,9 +21,10 @@ export const UPDATE_DASHBOARD_ITEM = gql`
     }
   }
 `;
+
 export const DELETE_DASHBOARD_ITEM = gql`
-  mutation DeleteDashboardItem($id: String!) {
-    deleteDashboardItem(id: $id) {
+  mutation DeleteDashboardItem($id: ID!) {
+    deleteDashboardItem(input: { id: $id }) {
       id
       layout
       vizState

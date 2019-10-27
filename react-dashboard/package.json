@@ -7,6 +7,9 @@
   },
   "dependencies": {
     "@cubejs-backend/postgres-driver": "^0.11.11",
-    "@cubejs-backend/server": "^0.11.11"
+    "@cubejs-backend/server": "^0.11.11",
+    "jsonwebtoken": "^8.5.1",
+    "jwk-to-pem": "^2.0.1",
+    "lodash": "^4.17.15"
   }
 }

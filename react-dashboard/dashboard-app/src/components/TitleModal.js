@@ -43,8 +43,8 @@ const TitleModal = ({
         try {
           await (itemId ? updateDashboardItem : addDashboardItem)({
             variables: {
-              id: itemId,
               input: {
+                id: itemId,
                 vizState: JSON.stringify(finalVizState),
                 name: finalTitle
               }
