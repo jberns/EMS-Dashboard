@@ -21,8 +21,6 @@ const DashboardItemDropdown = ({ itemId }) => {
       </Menu.Item>
       <Menu.Item
         onClick={() => {
-          console.log(gql(deleteDashboardItem));
-          console.log(itemId);
           return Modal.confirm({
             title: "Are you sure you want to delete this item?",
             okText: "Yes",

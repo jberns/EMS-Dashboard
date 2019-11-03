@@ -16,7 +16,6 @@ const ExplorePage = withRouter(({ history, location }) => {
   const [addingToDashboard, setAddingToDashboard] = useState(false);
   const params = new URLSearchParams(location.search);
   const itemId = params.get("itemId");
-  console.log(itemId);
 
   const { loading, error, data } = useQuery(gql(getDashboardItem), {
     variables: {
