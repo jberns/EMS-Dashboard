@@ -1,57 +1,39 @@
 import React from "react";
-import * as PropTypes from "prop-types";
 import { Menu } from "antd";
 import ButtonDropdown from "./ButtonDropdown";
 import MemberDropdown from "./MemberDropdown";
 import RemoveButtonGroup from "./RemoveButtonGroup";
+import MemberGroupTitle from "./MemberGroupTitle";
+import PlusIcon from "./PlusIcon";
+import styled from "styled-components";
+
 const DateRanges = [
-  {
-    title: "All time",
-    value: undefined
-  },
-  {
-    value: "Today"
-  },
-  {
-    value: "Yesterday"
-  },
-  {
-    value: "This week"
-  },
-  {
-    value: "This month"
-  },
-  {
-    value: "This quarter"
-  },
-  {
-    value: "This year"
-  },
-  {
-    value: "Last 7 days"
-  },
-  {
-    value: "Last 30 days"
-  },
-  {
-    value: "Last week"
-  },
-  {
-    value: "Last month"
-  },
-  {
-    value: "Last quarter"
-  },
-  {
-    value: "Last year"
-  }
+  { title: "All time", value: undefined },
+  { value: "Today" },
+  { value: "Yesterday" },
+  { value: "This week" },
+  { value: "This month" },
+  { value: "This quarter" },
+  { value: "This year" },
+  { value: "Last 7 days" },
+  { value: "Last 30 days" },
+  { value: "Last week" },
+  { value: "Last month" },
+  { value: "Last quarter" },
+  { value: "Last year" }
 ];
+
+const GroupLabel = styled.span`
+  font-size: 14px;
+  margin: 0 12px;
+`;
 
 const TimeGroup = ({
   members,
   availableMembers,
   addMemberName,
-  updateMethods
+  updateMethods,
+  title
 }) => {
   const granularityMenu = (member, onClick) => (
     <Menu>
@@ -78,13 +60,15 @@ const TimeGroup = ({
   );
 
   return (
-    <span>
+    <div>
+      <MemberGroupTitle title={title} />
       {members.map(m => [
         <RemoveButtonGroup
           onRemoveClick={() => updateMethods.remove(m)}
           key={`${m.dimension.name}-member`}
         >
           <MemberDropdown
+            type='selected'
             onClick={updateWith =>
               updateMethods.update(m, { ...m, dimension: updateWith })
             }
@@ -93,27 +77,22 @@ const TimeGroup = ({
             {m.dimension.title}
           </MemberDropdown>
         </RemoveButtonGroup>,
-        <b key={`${m.dimension.name}-for`}>FOR</b>,
+        <GroupLabel key={`${m.dimension.name}-for`}>for</GroupLabel>,
         <ButtonDropdown
+          type='time-group'
           overlay={dateRangeMenu(dateRange =>
             updateMethods.update(m, { ...m, dateRange: dateRange.value })
           )}
-          style={{
-            marginLeft: 8,
-            marginRight: 8
-          }}
           key={`${m.dimension.name}-date-range`}
         >
           {m.dateRange || "All time"}
         </ButtonDropdown>,
-        <b key={`${m.dimension.name}-by`}>BY</b>,
+        <GroupLabel key={`${m.dimension.name}-by`}>by</GroupLabel>,
         <ButtonDropdown
+          type='time-group'
           overlay={granularityMenu(m.dimension, granularity =>
             updateMethods.update(m, { ...m, granularity: granularity.name })
           )}
-          style={{
-            marginLeft: 8
-          }}
           key={`${m.dimension.name}-granularity`}
         >
           {m.dimension.granularities.find(g => g.name === m.granularity) &&
@@ -123,26 +102,17 @@ const TimeGroup = ({
       {!members.length && (
         <MemberDropdown
           onClick={member =>
-            updateMethods.add({
-              dimension: member,
-              granularity: "day"
-            })
+            updateMethods.add({ dimension: member, granularity: "day" })
           }
           availableMembers={availableMembers}
-          type="dashed"
-          icon="plus"
+          type='new'
         >
           {addMemberName}
+          <PlusIcon />
         </MemberDropdown>
       )}
-    </span>
+    </div>
   );
 };
 
-TimeGroup.propTypes = {
-  members: PropTypes.array.isRequired,
-  availableMembers: PropTypes.array.isRequired,
-  addMemberName: PropTypes.string.isRequired,
-  updateMethods: PropTypes.object.isRequired
-};
 export default TimeGroup;

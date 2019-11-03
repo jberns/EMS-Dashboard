@@ -3,36 +3,51 @@ import { Alert, Button, Spin } from "antd";
 import { useQuery } from "@apollo/react-hooks";
 import { withRouter } from "react-router-dom";
 import ExploreQueryBuilder from "../components/QueryBuilder/ExploreQueryBuilder";
-import { GET_DASHBOARD_ITEM } from "../graphql/queries";
+import { listDashboardItems, getDashboardItem } from "../graphql/queries";
 import TitleModal from "../components/TitleModal.js";
+
+import { isQueryPresent } from "@cubejs-client/react";
+import PageHeader from "../components/PageHeader";
+import ExploreTitle from "../components/ExploreTitle";
+
+import gql from "graphql-tag";
+
 const ExplorePage = withRouter(({ history, location }) => {
   const [addingToDashboard, setAddingToDashboard] = useState(false);
   const params = new URLSearchParams(location.search);
   const itemId = params.get("itemId");
-  const { loading, error, data } = useQuery(GET_DASHBOARD_ITEM, {
+  console.log(itemId);
+
+  const { loading, error, data } = useQuery(gql(getDashboardItem), {
     variables: {
       id: itemId
-    },
-    skip: !itemId
+    }
   });
+
   const [vizState, setVizState] = useState(null);
-  const finalVizState =
-    vizState ||
-    (itemId && !loading && data && JSON.parse(data.dashboardItem.vizState)) ||
-    {};
   const [titleModalVisible, setTitleModalVisible] = useState(false);
   const [title, setTitle] = useState(null);
+
+  const finalVizState =
+    vizState ||
+    (itemId &&
+      !loading &&
+      data &&
+      JSON.parse(data.getDashboardItem.vizState)) ||
+    {};
+
   const finalTitle =
     title != null
       ? title
-      : (itemId && !loading && data && data.dashboardItem.name) || "New Chart";
+      : (itemId && !loading && data && data.getDashboardItem.name) ||
+        "New Chart";
 
   if (loading) {
     return <Spin />;
   }
 
-  if (error) {
-    return <Alert type="error" message={error.toString()} />;
+  if (itemId && error) {
+    return <Alert type='error' message={error.toString()} />;
   }
 
   return (
@@ -47,20 +62,21 @@ const ExplorePage = withRouter(({ history, location }) => {
         setTitle={setTitle}
         finalTitle={finalTitle}
       />
-      <ExploreQueryBuilder
-        vizState={finalVizState}
-        setVizState={setVizState}
-        chartExtra={[
+      <PageHeader
+        title={<ExploreTitle itemTitle={finalTitle} />}
+        button={
           <Button
-            key="button"
-            type="primary"
+            key='button'
+            type='primary'
             loading={addingToDashboard}
+            disabled={!isQueryPresent(finalVizState.query || {})}
             onClick={() => setTitleModalVisible(true)}
           >
             {itemId ? "Update" : "Add to Dashboard"}
           </Button>
-        ]}
+        }
       />
+      <ExploreQueryBuilder vizState={finalVizState} setVizState={setVizState} />
     </div>
   );
 });

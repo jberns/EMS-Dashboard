@@ -1,11 +1,13 @@
 import React from "react";
 import { Modal, Input } from "antd";
 import { useMutation } from "@apollo/react-hooks";
-import { GET_DASHBOARD_ITEMS } from "../graphql/queries";
+import { listDashboardItems } from "../graphql/queries";
 import {
-  CREATE_DASHBOARD_ITEM,
-  UPDATE_DASHBOARD_ITEM
+  createDashboardItem,
+  updateDashboardItem
 } from "../graphql/mutations";
+
+import gql from "graphql-tag";
 
 const TitleModal = ({
   history,
@@ -17,17 +19,17 @@ const TitleModal = ({
   setTitle,
   finalTitle
 }) => {
-  const [addDashboardItem] = useMutation(CREATE_DASHBOARD_ITEM, {
+  const [addItem] = useMutation(gql(createDashboardItem), {
     refetchQueries: [
       {
-        query: GET_DASHBOARD_ITEMS
+        query: gql(listDashboardItems)
       }
     ]
   });
-  const [updateDashboardItem] = useMutation(UPDATE_DASHBOARD_ITEM, {
+  const [updateItem] = useMutation(gql(updateDashboardItem), {
     refetchQueries: [
       {
-        query: GET_DASHBOARD_ITEMS
+        query: gql(listDashboardItems)
       }
     ]
   });
@@ -41,7 +43,7 @@ const TitleModal = ({
         setAddingToDashboard(true);
 
         try {
-          await (itemId ? updateDashboardItem : addDashboardItem)({
+          await (itemId ? updateItem : addItem)({
             variables: {
               input: {
                 id: itemId,

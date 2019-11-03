@@ -2,94 +2,120 @@ import React from "react";
 import PropTypes from "prop-types";
 import { useCubeQuery } from "@cubejs-client/react";
 import { Spin, Row, Col, Statistic, Table } from "antd";
-import { Chart, Axis, Tooltip, Geom, Coord, Legend } from "bizcharts";
+import {
+  CartesianGrid,
+  PieChart,
+  Pie,
+  Cell,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+  BarChart,
+  Bar,
+  LineChart,
+  Line
+} from "recharts";
 
-const stackedChartData = resultSet => {
-  const data = resultSet
-    .pivot()
-    .map(({ xValues, yValuesArray }) =>
-      yValuesArray.map(([yValues, m]) => ({
-        x: resultSet.axisValuesString(xValues, ", "),
-        color: resultSet.axisValuesString(yValues, ", "),
-        measure: m && Number.parseFloat(m)
-      }))
-    )
-    .reduce((a, b) => a.concat(b), []);
-  return data;
+import moment from "moment";
+import numeral from "numeral";
+
+const numberFormatter = item => numeral(item).format("0,0");
+const dateFormatter = item => moment(item).format("MMM YY");
+const xAxisFormatter = item => {
+  if (moment(item).isValid()) {
+    return dateFormatter(item);
+  } else {
+    return item;
+  }
 };
 
+const CartesianChart = ({ resultSet, children, ChartComponent }) => (
+  <ResponsiveContainer width='100%' height={350}>
+    <ChartComponent data={resultSet.chartPivot()}>
+      <XAxis
+        axisLine={false}
+        tickLine={false}
+        tickFormatter={xAxisFormatter}
+        dataKey='x'
+        minTickGap={20}
+      />
+      <YAxis
+        axisLine={false}
+        tickLine={false}
+        tickFormatter={numberFormatter}
+      />
+      <CartesianGrid />
+      {children}
+      <Legend />
+      <Tooltip labelFormatter={dateFormatter} formatter={numberFormatter} />
+    </ChartComponent>
+  </ResponsiveContainer>
+);
+
+const colors = ["#7DB3FF", "#49457B", "#FF7C78"];
 const TypeToChartComponent = {
   line: ({ resultSet }) => (
-    <Chart
-      scale={{
-        x: {
-          tickCount: 8
-        }
-      }}
-      height={400}
-      data={stackedChartData(resultSet)}
-      forceFit
-    >
-      <Axis name="x" />
-      <Axis name="measure" />
-      <Tooltip
-        crosshairs={{
-          type: "y"
-        }}
-      />
-      <Geom type="line" position={`x*measure`} size={2} color="color" />
-    </Chart>
+    <CartesianChart resultSet={resultSet} ChartComponent={LineChart}>
+      {resultSet.seriesNames().map((series, i) => (
+        <Line
+          key={series.key}
+          stackId='a'
+          dataKey={series.key}
+          name={series.title}
+          stroke={colors[i]}
+        />
+      ))}
+    </CartesianChart>
   ),
   bar: ({ resultSet }) => (
-    <Chart
-      scale={{
-        x: {
-          tickCount: 8
-        }
-      }}
-      height={400}
-      data={stackedChartData(resultSet)}
-      forceFit
-    >
-      <Axis name="x" />
-      <Axis name="measure" />
-      <Tooltip />
-      <Geom type="intervalStack" position={`x*measure`} color="color" />
-    </Chart>
+    <CartesianChart resultSet={resultSet} ChartComponent={BarChart}>
+      {resultSet.seriesNames().map((series, i) => (
+        <Bar
+          key={series.key}
+          stackId='a'
+          dataKey={series.key}
+          name={series.title}
+          fill={colors[i]}
+        />
+      ))}
+    </CartesianChart>
   ),
   area: ({ resultSet }) => (
-    <Chart
-      scale={{
-        x: {
-          tickCount: 8
-        }
-      }}
-      height={400}
-      data={stackedChartData(resultSet)}
-      forceFit
-    >
-      <Axis name="x" />
-      <Axis name="measure" />
-      <Tooltip
-        crosshairs={{
-          type: "y"
-        }}
-      />
-      <Geom type="areaStack" position={`x*measure`} size={2} color="color" />
-    </Chart>
+    <CartesianChart resultSet={resultSet} ChartComponent={AreaChart}>
+      {resultSet.seriesNames().map((series, i) => (
+        <Area
+          key={series.key}
+          stackId='a'
+          dataKey={series.key}
+          name={series.title}
+          stroke={colors[i]}
+          fill={colors[i]}
+        />
+      ))}
+    </CartesianChart>
   ),
   pie: ({ resultSet }) => (
-    <Chart height={400} data={resultSet.chartPivot()} forceFit>
-      <Coord type="theta" radius={0.75} />
-      {resultSet.seriesNames().map(s => (
-        <Axis name={s.key} />
-      ))}
-      <Legend position="right" />
-      <Tooltip />
-      {resultSet.seriesNames().map(s => (
-        <Geom type="intervalStack" position={s.key} color="category" />
-      ))}
-    </Chart>
+    <ResponsiveContainer width='100%' height={350}>
+      <PieChart>
+        <Pie
+          isAnimationActive={false}
+          data={resultSet.chartPivot()}
+          nameKey='x'
+          dataKey={resultSet.seriesNames()[0].key}
+          fill='#8884d8'
+        >
+          {resultSet.chartPivot().map((e, index) => (
+            <Cell key={index} fill={colors[index % colors.length]} />
+          ))}
+        </Pie>
+        <Legend />
+        <Tooltip />
+      </PieChart>
+    </ResponsiveContainer>
   ),
   table: ({ resultSet }) => (
     <Table
@@ -100,9 +126,9 @@ const TypeToChartComponent = {
   ),
   number: ({ resultSet }) => (
     <Row
-      type="flex"
-      justify="center"
-      align="middle"
+      type='flex'
+      justify='center'
+      align='middle'
       style={{
         height: "100%"
       }}

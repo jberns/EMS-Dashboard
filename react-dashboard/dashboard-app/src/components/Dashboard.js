@@ -3,15 +3,17 @@ import RGL, { WidthProvider } from "react-grid-layout";
 import { useMutation } from "@apollo/react-hooks";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import { GET_DASHBOARD_ITEMS } from "../graphql/queries";
-import { UPDATE_DASHBOARD_ITEM } from "../graphql/mutations";
+import { listDashboardItems } from "../graphql/queries";
+import { updateDashboardItem } from "../graphql/mutations";
+import gql from "graphql-tag";
+
 const ReactGridLayout = WidthProvider(RGL);
 
 const Dashboard = ({ children, dashboardItems }) => {
-  const [updateDashboardItem] = useMutation(UPDATE_DASHBOARD_ITEM, {
+  const [updateItem] = useMutation(gql(updateDashboardItem), {
     refetchQueries: [
       {
-        query: GET_DASHBOARD_ITEMS
+        query: gql(listDashboardItems)
       }
     ]
   });
@@ -27,7 +29,7 @@ const Dashboard = ({ children, dashboardItems }) => {
       });
 
       if (item && toUpdate !== item.layout) {
-        updateDashboardItem({
+        updateItem({
           variables: {
             input: {
               id: item.id,

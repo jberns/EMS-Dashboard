@@ -2,10 +2,11 @@ import React from "react";
 import { Spin, Button, Alert } from "antd";
 import { Link } from "react-router-dom";
 import { useQuery } from "@apollo/react-hooks";
-import { GET_DASHBOARD_ITEMS } from "../graphql/queries";
+import { listDashboardItems } from "../graphql/queries";
 import ChartRenderer from "../components/ChartRenderer";
 import Dashboard from "../components/Dashboard";
 import DashboardItem from "../components/DashboardItem";
+import gql from "graphql-tag"
 
 const deserializeItem = i => ({
   ...i,
@@ -23,7 +24,7 @@ const defaultLayout = i => ({
 });
 
 const DashboardPage = () => {
-  const { loading, error, data } = useQuery(GET_DASHBOARD_ITEMS);
+  const { loading, error, data } = useQuery(gql(listDashboardItems));
 
   if (loading) {
     return <Spin />;

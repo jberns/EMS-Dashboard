@@ -2,14 +2,15 @@ import React from "react";
 import { Card, Menu, Button, Dropdown, Modal } from "antd";
 import { useMutation } from "@apollo/react-hooks";
 import { Link } from "react-router-dom";
-import { GET_DASHBOARD_ITEMS } from "../graphql/queries";
-import { DELETE_DASHBOARD_ITEM } from "../graphql/mutations";
+import { listDashboardItems } from "../graphql/queries";
+import { deleteDashboardItem } from "../graphql/mutations";
+import gql from "graphql-tag";
 
 const DashboardItemDropdown = ({ itemId }) => {
-  const [removeDashboardItem] = useMutation(DELETE_DASHBOARD_ITEM, {
+  const [removeDashboardItem] = useMutation(gql(deleteDashboardItem), {
     refetchQueries: [
       {
-        query: GET_DASHBOARD_ITEMS
+        query: gql(listDashboardItems)
       }
     ]
   });
@@ -19,8 +20,10 @@ const DashboardItemDropdown = ({ itemId }) => {
         <Link to={`/explore?itemId=${itemId}`}>Edit</Link>
       </Menu.Item>
       <Menu.Item
-        onClick={() =>
-          Modal.confirm({
+        onClick={() => {
+          console.log(gql(deleteDashboardItem));
+          console.log(itemId);
+          return Modal.confirm({
             title: "Are you sure you want to delete this item?",
             okText: "Yes",
             okType: "danger",
@@ -29,12 +32,12 @@ const DashboardItemDropdown = ({ itemId }) => {
             onOk() {
               removeDashboardItem({
                 variables: {
-                  id: itemId
+                  input: { id: itemId }
                 }
               });
             }
-          })
-        }
+          });
+        }}
       >
         Delete
       </Menu.Item>
@@ -43,10 +46,10 @@ const DashboardItemDropdown = ({ itemId }) => {
   return (
     <Dropdown
       overlay={dashboardItemDropdownMenu}
-      placement="bottomLeft"
+      placement='bottomLeft'
       trigger={["click"]}
     >
-      <Button shape="circle" icon="menu" />
+      <Button shape='circle' icon='menu' />
     </Dropdown>
   );
 };

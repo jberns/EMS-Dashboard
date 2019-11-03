@@ -1,23 +1,32 @@
-import gql from "graphql-tag";
+/* eslint-disable */
+// this is an auto generated file. This will be overwritten
 
-export const GET_DASHBOARD_ITEMS = gql`query ListDashboardItems {
-    listDashboardItems {
-      items {
-        id
-        layout
-        vizState
-        name
-      }
-    }
+export const getDashboardItem = `query GetDashboardItem($id: ID!) {
+  getDashboardItem(id: $id) {
+    id
+    name
+    layout
+    vizState
+    alarm
+    owner
   }
-`
-
-export const GET_DASHBOARD_ITEM = gql`query GetDashboardItem($id: ID!) {
-    dashboardItem: getDashboardItem(id: $id) {
+}
+`;
+export const listDashboardItems = `query ListDashboardItems(
+  $filter: ModelDashboardItemFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listDashboardItems(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
       id
+      name
       layout
       vizState
-      name
+      alarm
+      owner
     }
+    nextToken
   }
+}
 `;

@@ -3,4 +3,5 @@ type DashboardItem @model @auth(rules: [{allow: owner}]) {
   name: String
   layout: AWSJSON
   vizState: AWSJSON
+  alarm: AWSJSON
 }
