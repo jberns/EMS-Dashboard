@@ -6,7 +6,9 @@ import { listDashboardItems } from "../graphql/queries";
 import ChartRenderer from "../components/ChartRenderer";
 import Dashboard from "../components/Dashboard";
 import DashboardItem from "../components/DashboardItem";
-import gql from "graphql-tag"
+import gql from "graphql-tag";
+
+import OpenMap from "../components/OpenMap";
 
 const deserializeItem = i => ({
   ...i,
@@ -65,10 +67,13 @@ const DashboardPage = () => {
   );
 
   return !data || data.listDashboardItems.items.length ? (
-    <Dashboard dashboardItems={data && data.listDashboardItems.items}>
-      {data &&
-        data.listDashboardItems.items.map(deserializeItem).map(dashboardItem)}
-    </Dashboard>
+    <>
+      <Dashboard dashboardItems={data && data.listDashboardItems.items}>
+        {data &&
+          data.listDashboardItems.items.map(deserializeItem).map(dashboardItem)}
+      </Dashboard>
+      <OpenMap />
+    </>
   ) : (
     <Empty />
   );
