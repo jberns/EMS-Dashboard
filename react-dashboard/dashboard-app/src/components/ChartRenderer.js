@@ -152,8 +152,17 @@ const renderChart = Component => ({ resultSet, error }) =>
   (error && error.toString()) || <Spin />;
 
 const ChartRenderer = ({ vizState }) => {
+  console.log(vizState);
   const { query, chartType } = vizState;
   const component = TypeToMemoChartComponent[chartType];
+  if (chartType === "table")
+    query.filters = [
+      {
+        dimension: "Suppliers.email",
+        operator: "contains",
+        values: ["Cras@consectetuercursuset.co.uk"]
+      }
+    ];
   const renderProps = useCubeQuery(query);
   return component && renderChart(component)(renderProps);
 };
